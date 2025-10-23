@@ -33,663 +33,6 @@ Ce guide vous accompagnera dans la maîtrise complète des outils essentiels du 
 
 ## Git - Les Fondamentaux
 
-### 9.3 Avant de Créer une Pull Request
-
-```bash
-✅ Tous les tests passent localement
-✅ Build réussit sans erreurs
-✅ Code lint sans warnings
-✅ Rebase sur develop récent
-✅ Pas de conflits
-✅ Branche poussée sur GitHub
-✅ Description PR complète et claire
-✅ Issue liée avec "Closes #123"
-✅ Reviewers assignés
-✅ Labels ajoutés
-```
-
-### 9.4 Review de Code (Reviewer)
-
-```bash
-✅ Code compilé et testé localement
-✅ Tests automatiques passent
-✅ Logique métier correcte
-✅ Pas de failles de sécurité évidentes
-✅ Performance acceptable
-✅ Code lisible et maintenable
-✅ Documentation suffisante
-✅ Pas de code dupliqué
-✅ Respect des conventions du projet
-✅ Feedback constructif donné
-```
-
-### 9.5 Après le Merge
-
-```bash
-✅ Branche locale supprimée
-✅ Branche distante supprimée
-✅ Develop mis à jour localement
-✅ Issue fermée
-✅ Tag de version créé (si release)
-✅ Changelog mis à jour (si release)
-✅ Équipe notifiée (Slack)
-```
-
-### 9.6 CI/CD Pipeline
-
-```bash
-✅ Tests unitaires configurés
-✅ Tests d'intégration configurés
-✅ Linting automatique
-✅ Build Docker automatique
-✅ Scan de sécurité activé
-✅ Déploiement staging automatique
-✅ Déploiement production manuel/approuvé
-✅ Health checks après déploiement
-✅ Rollback plan en place
-```
-
-### 9.7 Sécurité
-
-```bash
-✅ Pas de secrets dans le code
-✅ Variables d'environnement utilisées
-✅ .gitignore complet
-✅ Dépendances à jour (npm audit)
-✅ HTTPS partout
-✅ Validation des entrées utilisateur
-✅ Protection contre SQL injection
-✅ Protection contre XSS
-✅ Rate limiting en place
-✅ Logs ne contiennent pas de données sensibles
-```
-
----
-
-## Annexes
-
-### A. Commandes Git Avancées
-
-#### A.1 Modifier l'Historique
-
-```bash
-# Modifier le dernier commit
-git commit --amend -m "Nouveau message"
-
-# Modifier les 3 derniers commits (interactive rebase)
-git rebase -i HEAD~3
-
-# Dans l'éditeur :
-# pick abc123 commit 1
-# reword def456 commit 2  # Changer le message
-# squash ghi789 commit 3  # Fusionner avec le précédent
-
-# Annuler un commit public (créer un nouveau commit d'annulation)
-git revert abc123
-
-# Annuler un commit privé (supprimer de l'historique)
-git reset --hard HEAD~1  # DANGER: Perte de données !
-```
-
-#### A.2 Chercher dans l'Historique
-
-```bash
-# Trouver qui a modifié une ligne
-git blame fichier.js
-
-# Chercher dans tout l'historique
-git log --all --grep="bug fix"
-
-# Trouver quand un bug a été introduit (bisect)
-git bisect start
-git bisect bad                    # Commit actuel est mauvais
-git bisect good abc123            # Ce commit était bon
-# Git teste automatiquement les commits entre les deux
-# À chaque étape : git bisect good ou git bisect bad
-git bisect reset                  # Terminer
-```
-
-#### A.3 Stash Avancé
-
-```bash
-# Sauvegarder temporairement avec message
-git stash save "WIP: refactoring user service"
-
-# Lister les stash
-git stash list
-
-# Appliquer un stash spécifique
-git stash apply stash@{2}
-
-# Appliquer et supprimer
-git stash pop
-
-# Créer une branche depuis un stash
-git stash branch feature/new-feature stash@{0}
-
-# Supprimer tous les stash
-git stash clear
-```
-
-#### A.4 Cherry-Pick
-
-```bash
-# Appliquer un commit spécifique d'une autre branche
-git cherry-pick abc123
-
-# Appliquer plusieurs commits
-git cherry-pick abc123 def456 ghi789
-
-# Résoudre les conflits si nécessaire
-git add .
-git cherry-pick --continue
-```
-
-#### A.5 Submodules
-
-```bash
-# Ajouter un submodule
-git submodule add https://github.com/user/repo.git libs/repo
-
-# Cloner un projet avec submodules
-git clone --recursive https://github.com/user/main-repo.git
-
-# Mettre à jour les submodules
-git submodule update --remote --merge
-
-# Supprimer un submodule
-git submodule deinit libs/repo
-git rm libs/repo
-```
-
-### B. Configuration Git Optimale
-
-#### B.1 Fichier .gitconfig Global
-
-```bash
-# ~/.gitconfig
-[user]
-    name = Votre Nom
-    email = votre.email@example.com
-
-[core]
-    editor = code --wait
-    autocrlf = input
-    ignorecase = false
-
-[init]
-    defaultBranch = main
-
-[pull]
-    rebase = true
-
-[push]
-    default = current
-    followTags = true
-
-[fetch]
-    prune = true
-
-[rebase]
-    autoStash = true
-
-[diff]
-    tool = vscode
-
-[merge]
-    tool = vscode
-    conflictstyle = diff3
-
-[alias]
-    # Shortcuts
-    co = checkout
-    br = branch
-    ci = commit
-    st = status
-    
-    # Pretty log
-    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
-    
-    # Show branches
-    branches = branch -a
-    
-    # Undo last commit but keep changes
-    undo = reset HEAD~1 --mixed
-    
-    # Clean up merged branches
-    cleanup = "!git branch --merged | grep -v '\\*\\|main\\|develop' | xargs -n 1 git branch -d"
-    
-    # Show what changed in a file
-    whatchanged = log -p --follow --
-    
-    # Stash shortcuts
-    save = stash save
-    pop = stash pop
-    
-    # Quick commit
-    ac = !git add -A && git commit -m
-    
-    # Amend without editing message
-    amend = commit --amend --no-edit
-
-[color]
-    ui = auto
-
-[credential]
-    helper = cache --timeout=3600
-```
-
-#### B.2 Fichier .gitignore Global
-
-```bash
-# ~/.gitignore_global
-
-# OS Files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Desktop.ini
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.project
-.settings/
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Temporary
-*.tmp
-*.temp
-.cache/
-
-# Activer globalement
-git config --global core.excludesfile ~/.gitignore_global
-```
-
-### C. Scripts Utiles
-
-#### C.1 Script de Setup Projet
-
-```bash
-#!/bin/bash
-# setup-project.sh
-
-echo "🚀 Project Setup Script"
-
-# Vérifier Git
-if ! command -v git &> /dev/null; then
-    echo "❌ Git n'est pas installé"
-    exit 1
-fi
-
-# Configuration Git
-read -p "Nom complet : " git_name
-read -p "Email : " git_email
-
-git config --global user.name "$git_name"
-git config --global user.email "$git_email"
-git config --global pull.rebase true
-git config --global init.defaultBranch main
-
-echo "✅ Git configuré"
-
-# Générer clé SSH
-if [ ! -f ~/.ssh/id_ed25519 ]; then
-    echo "🔑 Génération clé SSH..."
-    ssh-keygen -t ed25519 -C "$git_email" -f ~/.ssh/id_ed25519 -N ""
-    eval "$(ssh-agent -s)"
-    ssh-add ~/.ssh/id_ed25519
-    echo "✅ Clé SSH créée"
-    echo "📋 Ajoutez cette clé à GitHub:"
-    cat ~/.ssh/id_ed25519.pub
-else
-    echo "✅ Clé SSH existe déjà"
-fi
-
-# Installer Docker
-if ! command -v docker &> /dev/null; then
-    echo "📦 Installation de Docker..."
-    curl -fsSL https://get.docker.com -o get-docker.sh
-    sudo sh get-docker.sh
-    sudo usermod -aG docker $USER
-    echo "✅ Docker installé (redémarrer pour groupe docker)"
-else
-    echo "✅ Docker déjà installé"
-fi
-
-echo ""
-echo "✨ Setup terminé !"
-echo "📖 Prochaines étapes:"
-echo "   1. Ajoutez votre clé SSH à GitHub"
-echo "   2. Clonez votre projet: git clone git@github.com:user/repo.git"
-echo "   3. Lancez: docker-compose up -d"
-```
-
-#### C.2 Script de Nettoyage Git
-
-```bash
-#!/bin/bash
-# git-cleanup.sh
-
-echo "🧹 Nettoyage du dépôt Git"
-
-# Supprimer les branches mergées
-echo "Suppression des branches mergées..."
-git branch --merged | grep -v "\*\|main\|develop" | xargs -n 1 git branch -d
-
-# Nettoyer les références distantes
-echo "Nettoyage des références distantes..."
-git remote prune origin
-
-# Garbage collection
-echo "Optimisation du dépôt..."
-git gc --aggressive --prune=now
-
-# Afficher la taille
-echo "Taille du dépôt:"
-du -sh .git
-
-echo "✅ Nettoyage terminé"
-```
-
-#### C.3 Script Pre-Commit Hook
-
-```bash
-#!/bin/bash
-# .git/hooks/pre-commit
-
-echo "🔍 Pre-commit checks..."
-
-# Vérifier qu'il n'y a pas de conflits non résolus
-if git diff --check --cached | grep "conflict"; then
-    echo "❌ Conflits détectés"
-    exit 1
-fi
-
-# Vérifier les secrets
-if git diff --cached | grep -E "(password|secret|api_key|token).*=.*['\"]"; then
-    echo "⚠️  Possible secret détecté!"
-    read -p "Continuer quand même? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
-fi
-
-# Linter (si disponible)
-if command -v npm &> /dev/null; then
-    npm run lint --silent
-    if [ $? -ne 0 ]; then
-        echo "❌ Linting failed"
-        exit 1
-    fi
-fi
-
-# Tests (si disponible)
-if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
-    npm run test --silent
-    if [ $? -ne 0 ]; then
-        echo "❌ Tests failed"
-        exit 1
-    fi
-fi
-
-echo "✅ Pre-commit checks passed"
-exit 0
-```
-
-### D. Troubleshooting
-
-#### D.1 Problèmes Fréquents
-
-**Problème : "Permission denied (publickey)"**
-```bash
-# Vérifier la clé SSH
-ssh -T git@github.com
-
-# Ajouter la clé à l'agent
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-
-# Vérifier la config SSH
-cat ~/.ssh/config
-
-# Devrait contenir:
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_ed25519
-```
-
-**Problème : "fatal: refusing to merge unrelated histories"**
-```bash
-# Forcer le merge
-git pull origin main --allow-unrelated-histories
-```
-
-**Problème : "Your branch and 'origin/main' have diverged"**
-```bash
-# Option 1: Rebase (historique propre)
-git pull --rebase origin main
-
-# Option 2: Merge (préserve l'historique)
-git pull origin main
-
-# Option 3: Forcer (DANGER: écrase le remote)
-git push --force-with-lease origin main
-```
-
-**Problème : Commit dans la mauvaise branche**
-```bash
-# Annuler le commit (garde les changements)
-git reset HEAD~1
-
-# Changer de branche
-git stash
-git checkout correct-branch
-git stash pop
-
-# Commiter dans la bonne branche
-git add .
-git commit -m "message"
-```
-
-**Problème : Besoin d'annuler un push**
-```bash
-# Créer un commit d'annulation (safe)
-git revert abc123
-git push origin main
-
-# Ou forcer (DANGER: réécrit l'historique public)
-git reset --hard HEAD~1
-git push --force origin main
-```
-
-#### D.2 Récupération d'Urgence
-
-**Fichier supprimé par erreur**
-```bash
-# Retrouver dans l'historique
-git log -- fichier-supprimé.js
-
-# Restaurer depuis un commit
-git checkout abc123 -- fichier-supprimé.js
-```
-
-**Branche supprimée par erreur**
-```bash
-# Lister les refs perdus
-git reflog
-
-# Retrouver le dernier commit de la branche
-git reflog | grep "branch-name"
-
-# Recréer la branche
-git checkout -b branch-name abc123
-```
-
-**Reset --hard par erreur**
-```bash
-# Retrouver dans reflog
-git reflog
-
-# Revenir à l'état précédent
-git reset --hard HEAD@{1}
-```
-
-### E. Ressources et Liens
-
-#### E.1 Documentation Officielle
-
-- **Git** : https://git-scm.com/doc
-- **GitHub** : https://docs.github.com
-- **Docker** : https://docs.docker.com
-- **GitHub Actions** : https://docs.github.com/actions
-
-#### E.2 Outils Recommandés
-
-**Clients Git GUI:**
-- GitKraken : Interface graphique intuitive
-- SourceTree : Gratuit, complet
-- GitHub Desktop : Simple pour débutants
-
-**Extensions VS Code:**
-- GitLens : Visualisation avancée
-- Git Graph : Graphe des branches
-- Git History : Historique visuel
-
-**Outils CI/CD:**
-- GitHub Actions : Intégré à GitHub
-- CircleCI : Alternative puissante
-- Jenkins : Auto-hébergé
-
-**Monitoring:**
-- Sentry : Tracking d'erreurs
-- DataDog : Monitoring applicatif
-- Prometheus + Grafana : Métriques
-
-#### E.3 Apprentissage
-
-**Tutoriels Interactifs:**
-- Learn Git Branching : https://learngitbranching.js.org/
-- Git Immersion : https://gitimmersion.com/
-- Katacoda : https://www.katacoda.com/courses/git
-
-**Livres:**
-- Pro Git (gratuit) : https://git-scm.com/book
-- Git Pocket Guide
-- Continuous Delivery
-
-**Cheat Sheets:**
-- Git Cheat Sheet : https://training.github.com/
-- Docker Cheat Sheet : https://dockerlabs.collabnix.com/
-- Markdown Guide : https://www.markdownguide.org/
-
----
-
-## Conclusion
-
-### Récapitulatif du Parcours
-
-Vous avez maintenant parcouru un guide complet qui couvre :
-
-✅ **Git Fondamentaux** : Commits, branches, merges, rebases
-✅ **GitHub** : Collaboration, PRs, protections, reviews
-✅ **Git Flow** : Stratégie de branches professionnelle
-✅ **Docker** : Containerisation et orchestration
-✅ **CI/CD** : Automatisation avec GitHub Actions
-✅ **Bonnes Pratiques** : Conventions, sécurité, prévention
-✅ **Cas Pratique** : Projet réel avec équipe de 5 personnes
-✅ **Résolution de Conflits** : Stratégies et techniques avancées
-
-### Prochaines Étapes
-
-**Semaine 1-2 : Pratique de Base**
-- Créer un projet personnel
-- Faire 20+ commits avec conventions
-- Créer et merger 5+ branches
-- Expérimenter les conflits volontairement
-
-**Semaine 3-4 : Docker et CI/CD**
-- Dockeriser une application
-- Configurer GitHub Actions
-- Déployer sur un serveur de test
-- Automatiser les tests
-
-**Semaine 5-6 : Projet en Équipe**
-- Rejoindre ou créer un projet collaboratif
-- Appliquer le Git Flow
-- Faire des code reviews
-- Gérer des releases
-
-**Semaine 7-8 : Expertise**
-- Optimiser les workflows
-- Implémenter des feature flags
-- Configurer le monitoring
-- Documenter pour l'équipe
-
-### Conseils Finaux
-
-🎯 **La pratique est essentielle** : Lisez moins, codez plus
-🤝 **Collaborez** : Rejoignez des projets open-source
-📚 **Restez à jour** : Suivez les blogs tech et changelogs
-🔧 **Expérimentez** : Cassez les choses dans un environnement safe
-💬 **Partagez** : Enseignez ce que vous apprenez
-
-### Devenir un Expert
-
-Un expert Git/DevOps n'est pas quelqu'un qui n'a jamais de problèmes, mais quelqu'un qui :
-- Sait rapidement diagnostiquer et résoudre les problèmes
-- Prévient les erreurs par de bonnes pratiques
-- Automatise les tâches répétitives
-- Partage ses connaissances avec l'équipe
-- S'adapte aux besoins du projet
-
-**Vous êtes maintenant équipé pour devenir cet expert !** 🚀
-
----
-
-## Lexique
-
-**Branch** : Branche de développement parallèle
-**Commit** : Enregistrement d'un changement
-**Merge** : Fusion de deux branches
-**Rebase** : Rejouer des commits sur une autre base
-**Pull Request (PR)** : Demande de fusion de code
-**CI/CD** : Intégration et Déploiement Continus
-**Container** : Environnement d'exécution isolé
-**Image** : Template de container
-**Pipeline** : Séquence automatisée d'actions
-**Staging** : Environnement de pré-production
-**Hotfix** : Correction urgente en production
-**Feature Flag** : Activation conditionnelle de fonctionnalité
-**Rollback** : Retour à une version précédente
-**Artifact** : Fichier produit par le build
-
----
-
-**Version du Guide :** 1.0.0
-**Dernière Mise à Jour :** Octobre 2025
-**Auteur :** Formation DevOps Complète
-**License :** MIT - Libre d'utilisation et de modification 1.1 Installation et Configuration
-
 #### Installation
 
 **Linux/Mac :**
@@ -2874,4 +2217,660 @@ git push --force-with-lease origin feature/ma-fonctionnalite
 ✅ Sync quotidien avec develop (rebase)
 ```
 
-###
+### 9.3 Avant de Créer une Pull Request
+
+```bash
+✅ Tous les tests passent localement
+✅ Build réussit sans erreurs
+✅ Code lint sans warnings
+✅ Rebase sur develop récent
+✅ Pas de conflits
+✅ Branche poussée sur GitHub
+✅ Description PR complète et claire
+✅ Issue liée avec "Closes #123"
+✅ Reviewers assignés
+✅ Labels ajoutés
+```
+
+### 9.4 Review de Code (Reviewer)
+
+```bash
+✅ Code compilé et testé localement
+✅ Tests automatiques passent
+✅ Logique métier correcte
+✅ Pas de failles de sécurité évidentes
+✅ Performance acceptable
+✅ Code lisible et maintenable
+✅ Documentation suffisante
+✅ Pas de code dupliqué
+✅ Respect des conventions du projet
+✅ Feedback constructif donné
+```
+
+### 9.5 Après le Merge
+
+```bash
+✅ Branche locale supprimée
+✅ Branche distante supprimée
+✅ Develop mis à jour localement
+✅ Issue fermée
+✅ Tag de version créé (si release)
+✅ Changelog mis à jour (si release)
+✅ Équipe notifiée (Slack)
+```
+
+### 9.6 CI/CD Pipeline
+
+```bash
+✅ Tests unitaires configurés
+✅ Tests d'intégration configurés
+✅ Linting automatique
+✅ Build Docker automatique
+✅ Scan de sécurité activé
+✅ Déploiement staging automatique
+✅ Déploiement production manuel/approuvé
+✅ Health checks après déploiement
+✅ Rollback plan en place
+```
+
+### 9.7 Sécurité
+
+```bash
+✅ Pas de secrets dans le code
+✅ Variables d'environnement utilisées
+✅ .gitignore complet
+✅ Dépendances à jour (npm audit)
+✅ HTTPS partout
+✅ Validation des entrées utilisateur
+✅ Protection contre SQL injection
+✅ Protection contre XSS
+✅ Rate limiting en place
+✅ Logs ne contiennent pas de données sensibles
+```
+
+---
+
+## Annexes
+
+### A. Commandes Git Avancées
+
+#### A.1 Modifier l'Historique
+
+```bash
+# Modifier le dernier commit
+git commit --amend -m "Nouveau message"
+
+# Modifier les 3 derniers commits (interactive rebase)
+git rebase -i HEAD~3
+
+# Dans l'éditeur :
+# pick abc123 commit 1
+# reword def456 commit 2  # Changer le message
+# squash ghi789 commit 3  # Fusionner avec le précédent
+
+# Annuler un commit public (créer un nouveau commit d'annulation)
+git revert abc123
+
+# Annuler un commit privé (supprimer de l'historique)
+git reset --hard HEAD~1  # DANGER: Perte de données !
+```
+
+#### A.2 Chercher dans l'Historique
+
+```bash
+# Trouver qui a modifié une ligne
+git blame fichier.js
+
+# Chercher dans tout l'historique
+git log --all --grep="bug fix"
+
+# Trouver quand un bug a été introduit (bisect)
+git bisect start
+git bisect bad                    # Commit actuel est mauvais
+git bisect good abc123            # Ce commit était bon
+# Git teste automatiquement les commits entre les deux
+# À chaque étape : git bisect good ou git bisect bad
+git bisect reset                  # Terminer
+```
+
+#### A.3 Stash Avancé
+
+```bash
+# Sauvegarder temporairement avec message
+git stash save "WIP: refactoring user service"
+
+# Lister les stash
+git stash list
+
+# Appliquer un stash spécifique
+git stash apply stash@{2}
+
+# Appliquer et supprimer
+git stash pop
+
+# Créer une branche depuis un stash
+git stash branch feature/new-feature stash@{0}
+
+# Supprimer tous les stash
+git stash clear
+```
+
+#### A.4 Cherry-Pick
+
+```bash
+# Appliquer un commit spécifique d'une autre branche
+git cherry-pick abc123
+
+# Appliquer plusieurs commits
+git cherry-pick abc123 def456 ghi789
+
+# Résoudre les conflits si nécessaire
+git add .
+git cherry-pick --continue
+```
+
+#### A.5 Submodules
+
+```bash
+# Ajouter un submodule
+git submodule add https://github.com/user/repo.git libs/repo
+
+# Cloner un projet avec submodules
+git clone --recursive https://github.com/user/main-repo.git
+
+# Mettre à jour les submodules
+git submodule update --remote --merge
+
+# Supprimer un submodule
+git submodule deinit libs/repo
+git rm libs/repo
+```
+
+### B. Configuration Git Optimale
+
+#### B.1 Fichier .gitconfig Global
+
+```bash
+# ~/.gitconfig
+[user]
+    name = Votre Nom
+    email = votre.email@example.com
+
+[core]
+    editor = code --wait
+    autocrlf = input
+    ignorecase = false
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = true
+
+[push]
+    default = current
+    followTags = true
+
+[fetch]
+    prune = true
+
+[rebase]
+    autoStash = true
+
+[diff]
+    tool = vscode
+
+[merge]
+    tool = vscode
+    conflictstyle = diff3
+
+[alias]
+    # Shortcuts
+    co = checkout
+    br = branch
+    ci = commit
+    st = status
+    
+    # Pretty log
+    lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    
+    # Show branches
+    branches = branch -a
+    
+    # Undo last commit but keep changes
+    undo = reset HEAD~1 --mixed
+    
+    # Clean up merged branches
+    cleanup = "!git branch --merged | grep -v '\\*\\|main\\|develop' | xargs -n 1 git branch -d"
+    
+    # Show what changed in a file
+    whatchanged = log -p --follow --
+    
+    # Stash shortcuts
+    save = stash save
+    pop = stash pop
+    
+    # Quick commit
+    ac = !git add -A && git commit -m
+    
+    # Amend without editing message
+    amend = commit --amend --no-edit
+
+[color]
+    ui = auto
+
+[credential]
+    helper = cache --timeout=3600
+```
+
+#### B.2 Fichier .gitignore Global
+
+```bash
+# ~/.gitignore_global
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Temporary
+*.tmp
+*.temp
+.cache/
+
+# Activer globalement
+git config --global core.excludesfile ~/.gitignore_global
+```
+
+### C. Scripts Utiles
+
+#### C.1 Script de Setup Projet
+
+```bash
+#!/bin/bash
+# setup-project.sh
+
+echo "🚀 Project Setup Script"
+
+# Vérifier Git
+if ! command -v git &> /dev/null; then
+    echo "❌ Git n'est pas installé"
+    exit 1
+fi
+
+# Configuration Git
+read -p "Nom complet : " git_name
+read -p "Email : " git_email
+
+git config --global user.name "$git_name"
+git config --global user.email "$git_email"
+git config --global pull.rebase true
+git config --global init.defaultBranch main
+
+echo "✅ Git configuré"
+
+# Générer clé SSH
+if [ ! -f ~/.ssh/id_ed25519 ]; then
+    echo "🔑 Génération clé SSH..."
+    ssh-keygen -t ed25519 -C "$git_email" -f ~/.ssh/id_ed25519 -N ""
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+    echo "✅ Clé SSH créée"
+    echo "📋 Ajoutez cette clé à GitHub:"
+    cat ~/.ssh/id_ed25519.pub
+else
+    echo "✅ Clé SSH existe déjà"
+fi
+
+# Installer Docker
+if ! command -v docker &> /dev/null; then
+    echo "📦 Installation de Docker..."
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+    echo "✅ Docker installé (redémarrer pour groupe docker)"
+else
+    echo "✅ Docker déjà installé"
+fi
+
+echo ""
+echo "✨ Setup terminé !"
+echo "📖 Prochaines étapes:"
+echo "   1. Ajoutez votre clé SSH à GitHub"
+echo "   2. Clonez votre projet: git clone git@github.com:user/repo.git"
+echo "   3. Lancez: docker-compose up -d"
+```
+
+#### C.2 Script de Nettoyage Git
+
+```bash
+#!/bin/bash
+# git-cleanup.sh
+
+echo "🧹 Nettoyage du dépôt Git"
+
+# Supprimer les branches mergées
+echo "Suppression des branches mergées..."
+git branch --merged | grep -v "\*\|main\|develop" | xargs -n 1 git branch -d
+
+# Nettoyer les références distantes
+echo "Nettoyage des références distantes..."
+git remote prune origin
+
+# Garbage collection
+echo "Optimisation du dépôt..."
+git gc --aggressive --prune=now
+
+# Afficher la taille
+echo "Taille du dépôt:"
+du -sh .git
+
+echo "✅ Nettoyage terminé"
+```
+
+#### C.3 Script Pre-Commit Hook
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+echo "🔍 Pre-commit checks..."
+
+# Vérifier qu'il n'y a pas de conflits non résolus
+if git diff --check --cached | grep "conflict"; then
+    echo "❌ Conflits détectés"
+    exit 1
+fi
+
+# Vérifier les secrets
+if git diff --cached | grep -E "(password|secret|api_key|token).*=.*['\"]"; then
+    echo "⚠️  Possible secret détecté!"
+    read -p "Continuer quand même? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+# Linter (si disponible)
+if command -v npm &> /dev/null; then
+    npm run lint --silent
+    if [ $? -ne 0 ]; then
+        echo "❌ Linting failed"
+        exit 1
+    fi
+fi
+
+# Tests (si disponible)
+if [ -f "package.json" ] && grep -q "\"test\"" package.json; then
+    npm run test --silent
+    if [ $? -ne 0 ]; then
+        echo "❌ Tests failed"
+        exit 1
+    fi
+fi
+
+echo "✅ Pre-commit checks passed"
+exit 0
+```
+
+### D. Troubleshooting
+
+#### D.1 Problèmes Fréquents
+
+**Problème : "Permission denied (publickey)"**
+```bash
+# Vérifier la clé SSH
+ssh -T git@github.com
+
+# Ajouter la clé à l'agent
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+# Vérifier la config SSH
+cat ~/.ssh/config
+
+# Devrait contenir:
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+```
+
+**Problème : "fatal: refusing to merge unrelated histories"**
+```bash
+# Forcer le merge
+git pull origin main --allow-unrelated-histories
+```
+
+**Problème : "Your branch and 'origin/main' have diverged"**
+```bash
+# Option 1: Rebase (historique propre)
+git pull --rebase origin main
+
+# Option 2: Merge (préserve l'historique)
+git pull origin main
+
+# Option 3: Forcer (DANGER: écrase le remote)
+git push --force-with-lease origin main
+```
+
+**Problème : Commit dans la mauvaise branche**
+```bash
+# Annuler le commit (garde les changements)
+git reset HEAD~1
+
+# Changer de branche
+git stash
+git checkout correct-branch
+git stash pop
+
+# Commiter dans la bonne branche
+git add .
+git commit -m "message"
+```
+
+**Problème : Besoin d'annuler un push**
+```bash
+# Créer un commit d'annulation (safe)
+git revert abc123
+git push origin main
+
+# Ou forcer (DANGER: réécrit l'historique public)
+git reset --hard HEAD~1
+git push --force origin main
+```
+
+#### D.2 Récupération d'Urgence
+
+**Fichier supprimé par erreur**
+```bash
+# Retrouver dans l'historique
+git log -- fichier-supprimé.js
+
+# Restaurer depuis un commit
+git checkout abc123 -- fichier-supprimé.js
+```
+
+**Branche supprimée par erreur**
+```bash
+# Lister les refs perdus
+git reflog
+
+# Retrouver le dernier commit de la branche
+git reflog | grep "branch-name"
+
+# Recréer la branche
+git checkout -b branch-name abc123
+```
+
+**Reset --hard par erreur**
+```bash
+# Retrouver dans reflog
+git reflog
+
+# Revenir à l'état précédent
+git reset --hard HEAD@{1}
+```
+
+### E. Ressources et Liens
+
+#### E.1 Documentation Officielle
+
+- **Git** : https://git-scm.com/doc
+- **GitHub** : https://docs.github.com
+- **Docker** : https://docs.docker.com
+- **GitHub Actions** : https://docs.github.com/actions
+
+#### E.2 Outils Recommandés
+
+**Clients Git GUI:**
+- GitKraken : Interface graphique intuitive
+- SourceTree : Gratuit, complet
+- GitHub Desktop : Simple pour débutants
+
+**Extensions VS Code:**
+- GitLens : Visualisation avancée
+- Git Graph : Graphe des branches
+- Git History : Historique visuel
+
+**Outils CI/CD:**
+- GitHub Actions : Intégré à GitHub
+- CircleCI : Alternative puissante
+- Jenkins : Auto-hébergé
+
+**Monitoring:**
+- Sentry : Tracking d'erreurs
+- DataDog : Monitoring applicatif
+- Prometheus + Grafana : Métriques
+
+#### E.3 Apprentissage
+
+**Tutoriels Interactifs:**
+- Learn Git Branching : https://learngitbranching.js.org/
+- Git Immersion : https://gitimmersion.com/
+- Katacoda : https://www.katacoda.com/courses/git
+
+**Livres:**
+- Pro Git (gratuit) : https://git-scm.com/book
+- Git Pocket Guide
+- Continuous Delivery
+
+**Cheat Sheets:**
+- Git Cheat Sheet : https://training.github.com/
+- Docker Cheat Sheet : https://dockerlabs.collabnix.com/
+- Markdown Guide : https://www.markdownguide.org/
+
+---
+
+## Conclusion
+
+### Récapitulatif du Parcours
+
+Vous avez maintenant parcouru un guide complet qui couvre :
+
+✅ **Git Fondamentaux** : Commits, branches, merges, rebases
+✅ **GitHub** : Collaboration, PRs, protections, reviews
+✅ **Git Flow** : Stratégie de branches professionnelle
+✅ **Docker** : Containerisation et orchestration
+✅ **CI/CD** : Automatisation avec GitHub Actions
+✅ **Bonnes Pratiques** : Conventions, sécurité, prévention
+✅ **Cas Pratique** : Projet réel avec équipe de 5 personnes
+✅ **Résolution de Conflits** : Stratégies et techniques avancées
+
+### Prochaines Étapes
+
+**Semaine 1-2 : Pratique de Base**
+- Créer un projet personnel
+- Faire 20+ commits avec conventions
+- Créer et merger 5+ branches
+- Expérimenter les conflits volontairement
+
+**Semaine 3-4 : Docker et CI/CD**
+- Dockeriser une application
+- Configurer GitHub Actions
+- Déployer sur un serveur de test
+- Automatiser les tests
+
+**Semaine 5-6 : Projet en Équipe**
+- Rejoindre ou créer un projet collaboratif
+- Appliquer le Git Flow
+- Faire des code reviews
+- Gérer des releases
+
+**Semaine 7-8 : Expertise**
+- Optimiser les workflows
+- Implémenter des feature flags
+- Configurer le monitoring
+- Documenter pour l'équipe
+
+### Conseils Finaux
+
+🎯 **La pratique est essentielle** : Lisez moins, codez plus
+🤝 **Collaborez** : Rejoignez des projets open-source
+📚 **Restez à jour** : Suivez les blogs tech et changelogs
+🔧 **Expérimentez** : Cassez les choses dans un environnement safe
+💬 **Partagez** : Enseignez ce que vous apprenez
+
+### Devenir un Expert
+
+Un expert Git/DevOps n'est pas quelqu'un qui n'a jamais de problèmes, mais quelqu'un qui :
+- Sait rapidement diagnostiquer et résoudre les problèmes
+- Prévient les erreurs par de bonnes pratiques
+- Automatise les tâches répétitives
+- Partage ses connaissances avec l'équipe
+- S'adapte aux besoins du projet
+
+**Vous êtes maintenant équipé pour devenir cet expert !** 🚀
+
+---
+
+## Lexique
+
+**Branch** : Branche de développement parallèle
+**Commit** : Enregistrement d'un changement
+**Merge** : Fusion de deux branches
+**Rebase** : Rejouer des commits sur une autre base
+**Pull Request (PR)** : Demande de fusion de code
+**CI/CD** : Intégration et Déploiement Continus
+**Container** : Environnement d'exécution isolé
+**Image** : Template de container
+**Pipeline** : Séquence automatisée d'actions
+**Staging** : Environnement de pré-production
+**Hotfix** : Correction urgente en production
+**Feature Flag** : Activation conditionnelle de fonctionnalité
+**Rollback** : Retour à une version précédente
+**Artifact** : Fichier produit par le build
+
+---
+
+**Version du Guide :** 1.0.0
+**Dernière Mise à Jour :** Octobre 2025
+**Auteur :** Formation DevOps Complète
+**License :** MIT - Libre d'utilisation et de modification 1.1 Installation et Configuration
+
